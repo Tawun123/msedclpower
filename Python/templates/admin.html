@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Power Dashboard Admin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg: #F8F9FA;
+            --surface: #FFFFFF;
+            --slate: #0F1923;
+            --slate-mid: #3A4D5C;
+            --slate-muted: #7A8E9A;
+            --green: #02f206;
+            --rule: #E2E6EA;
+            --danger: #D93025;
+            --font-body: system-ui, sans-serif;
+            --font-mono: Consolas, monospace;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--slate);
+            font-family: var(--font-body);
+            min-height: 100vh;
+        }
+
+        .powerline {
+            width: 100%;
+            height: 3px;
+            background: var(--rule);
+            position: relative;
+        }
+
+        .powerline::after {
+            content: '';
+            position: absolute;
+            width: 72%;
+            height: 3px;
+            background: var(--green);
+        }
+
+        .page {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid var(--rule);
+        }
+
+        h1 {
+            font-size: 1.5rem;
+        }
+
+        header p {
+            font-family: var(--font-mono);
+            color: var(--slate-muted);
+            font-size: 0.85rem;
+            margin-top: 0.35rem;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--rule);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        h2 {
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--slate-mid);
+            margin-bottom: 0.35rem;
+        }
+
+        input, textarea {
+            width: 100%;
+            border: 1px solid var(--rule);
+            border-radius: 8px;
+            padding: 0.75rem;
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        textarea {
+            min-height: 360px;
+            resize: vertical;
+            white-space: pre;
+        }
+
+        button {
+            border: 1px solid var(--rule);
+            background: var(--surface);
+            color: var(--slate-mid);
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            padding: 0.55rem 0.9rem;
+            border-radius: 999px;
+            cursor: pointer;
+            margin-right: 0.5rem;
+        }
+
+        button:hover {
+            background: #F0F4F7;
+        }
+
+        .danger {
+            color: var(--danger);
+            border-color: #F2B8B5;
+        }
+
+        .messages {
+            margin-top: 1.5rem;
+        }
+
+        .message {
+            background: #F0F4F7;
+            border: 1px solid var(--rule);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            white-space: pre-wrap;
+        }
+
+        .warning {
+            color: var(--danger);
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .top-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .small {
+            font-size: 0.8rem;
+            color: var(--slate-muted);
+            font-family: var(--font-mono);
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="powerline"></div>
+
+<div class="page">
+
+    <header>
+        <h1>24K Glitterati 1 MSEDCL Admin Panel</h1>
+        <p>Wi-Fi control and outage CSV editor</p>
+    </header>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="message">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    {% endwith %}
+
+    {% if not logged_in %}
+
+    <div class="card">
+        <h2>Admin login</h2>
+
+        <form method="POST" action="/admin/login">
+            <label>Password</label>
+            <input type="password" name="password" required>
+
+            <button type="submit">Login</button>
+        </form>
+    </div>
+
+    {% else %}
+
+    <div class="top-actions">
+        <a href="/">
+            <button type="button">Back to dashboard</button>
+        </a>
+
+        <form method="POST" action="/admin/logout">
+            <button type="submit">Logout</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h2>Change Raspberry Pi Wi-Fi</h2>
+
+        <p class="warning">
+            Warning: after changing Wi-Fi, the Pi may disconnect for a while. If the new Wi-Fi has no internet, Cloudflare will stop working.
+        </p>
+
+        <form method="POST" action="/admin/wifi-scan">
+            <button type="submit">Scan Wi-Fi networks</button>
+        </form>
+
+        <br>
+
+        <form method="POST" action="/admin/wifi-connect">
+            <label>Set Wi-Fi name / SSID</label>
+            <input type="text" name="ssid" placeholder="Example: TPSS-Airtel" required>
+
+            <label>Set Wi-Fi password</label>
+            <input type="password" name="wifi_password" placeholder="Wi-Fi password" required>
+
+            <button type="submit">Connect to Wi-Fi</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h2>Edit outage CSV file</h2>
+
+        <p class="small">
+            Format should stay like this: Date,Time,Event
+            <br>
+            Example: 2026-07-02,14:35:09,Power Lost
+        </p>
+
+        <form method="POST" action="/admin/save-csv">
+            <label>power_log.csv</label>
+            <textarea name="csv_text">{{ csv_text }}</textarea>
+
+            <button type="submit" class="danger">Save CSV changes</button>
+        </form>
+    </div>
+
+    {% endif %}
+
+</div>
+
+</body>
+</html>
