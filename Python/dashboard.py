@@ -279,7 +279,7 @@ def admin():
             csv_text = df.to_csv(index=False)
 
         except Exception:
-            csv_text = CSV_FILE.read_text()
+            csv_text = CSV_FILE.read_text(encoding="utf-8", errors="replace")
     else:
         csv_text = ""
 
@@ -313,13 +313,25 @@ def admin_logout():
 def admin_save_csv():
     csv_text = request.form.get("csv_text", "")
 
-    if CSV_FILE.exists():
-        backup_file = CSV_FILE.with_name("power_log_backup.csv")
-        shutil.copy(CSV_FILE, backup_file)
+    if not csv_text.strip():
+        flash("CSV was empty, so it was not saved.")
+        return redirect(url_for("admin"))
 
-    CSV_FILE.write_text(csv_text.strip() + "\n")
+    try:
+        if CSV_FILE.exists():
+            backup_file = CSV_FILE.with_name("power_log_backup.csv")
+            shutil.copy(CSV_FILE, backup_file)
 
-    flash("CSV file saved. Backup created as power_log_backup.csv.")
+        CSV_FILE.write_text(
+            csv_text.strip() + "\n",
+            encoding="utf-8"
+        )
+
+        flash("CSV file saved. Backup created as power_log_backup.csv.")
+
+    except Exception as e:
+        flash(f"CSV save failed. Original file was not changed. Error: {e}")
+
     return redirect(url_for("admin"))
 
 
